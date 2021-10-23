@@ -2,7 +2,9 @@ import time
 
 from elasticsearch import Elasticsearch
 
-es = Elasticsearch(['http://localhost:9200/'], verify_certs=True)
+from functional.settings import config
+
+es = Elasticsearch([f'{config.es_host}:{config.es_port}'], verify_certs=True)
 
 while not es.ping():
     print('ES not connected, retry in 5 seconds...')

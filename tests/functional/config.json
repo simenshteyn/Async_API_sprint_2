@@ -1,0 +1,6 @@
+{
+  "es_host": "host.docker.internal",
+  "es_port": 9200,
+  "redis_host": "host.docker.internal",
+  "redis_port": 6379
+}

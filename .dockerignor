@@ -1,5 +1,3 @@
-PostgresData.txt
-*log
-volumes/
-elasticdb/
-postgres_data/
+docker-compose.yml
+Dockerfile
+.dockerignor

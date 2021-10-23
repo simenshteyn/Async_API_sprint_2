@@ -2,7 +2,9 @@ import time
 
 from redis import Redis, ConnectionError
 
-r = Redis(host="localhost", port="6379")
+from functional.settings import config
+
+r = Redis(host=config.redis_host, port=config.redis_port)
 
 is_connected = False
 
