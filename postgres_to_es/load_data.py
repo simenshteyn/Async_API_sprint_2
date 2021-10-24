@@ -1,6 +1,8 @@
 import psycopg2
 import logging
 
+import sys
+
 from datetime import datetime
 from contextlib import closing
 
@@ -8,7 +10,7 @@ from psycopg2.extensions import connection as _connection
 from psycopg2.extras import DictCursor
 
 from config import dsl, es_conf
-from postgresloader import PostgresLoader
+from postgresloader import PostgresLoader, LoadMovies, LoadGenre, LoadPerson
 from utils import backoff
 from es import EsSaver
 from state import State, JsonFileStorage
@@ -18,8 +20,8 @@ logger = logging.getLogger('LoaderStart')
 
 def load_from_postgres(pg_conn: _connection, name_index: str) -> list:
     """Основной метод загрузки данных из Postgres"""
-    postgres_loader = PostgresLoader(pg_conn)
-    data = getattr(postgres_loader, f'loader_{name_index}')()
+    clas = getattr(sys.modules[__name__], f'Load{name_index.title()}')(pg_conn)
+    data = getattr(clas, f'loader_{name_index}')()
     return data
 
 
