@@ -24,7 +24,7 @@ async def es_client():
     await client.close()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture()  # удалил scope='session'
 async def session():
     session = aiohttp.ClientSession()
     yield session
