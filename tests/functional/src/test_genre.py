@@ -31,7 +31,6 @@ async def test_search_genre(make_get_request):
     # Выполнение запроса
     response = await make_get_request('/genre/')
 
-    print(response)
     # Проверка результата
     assert response.status == 200
 
@@ -51,3 +50,5 @@ async def test_search_detailed(make_get_request):
     assert response.body['name'] == 'Action'
 
     assert response.body['description'] is None
+
+    assert len(response.body) == 3
