@@ -1,12 +1,12 @@
 import os
 import pytest
-from tests.functional.utils.json_read import load_json
+from utils.json_read import load_json
 
 c = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 @pytest.fixture(scope='session')
-async def create_data_movies(es_client):
+async def create_data(es_client):
     # Заполнение данных для теста
     data = await load_json(file='search_movie.json', index_name='movies', id='273bd379-fdc8-4133-acc7-7be18ef1b699')
 
@@ -16,9 +16,6 @@ async def create_data_movies(es_client):
 
     await es_client.bulk(body=data2, index='movies', refresh=True)
 
-
-@pytest.fixture(scope='session')
-async def create_data_person(es_client):
     data_person = await load_json(
         file='search_person.json', index_name='person', id='2cca941b-e05e-4314-9650-70155c752fa0'
     )
@@ -33,7 +30,7 @@ async def create_data_person(es_client):
 
 
 @pytest.mark.asyncio
-async def test_search_movies(make_get_request, create_data_movies):
+async def test_search_movies(make_get_request, create_data):
     # Выполнение запроса
     response = await make_get_request('/film/search/dog')
 
@@ -47,7 +44,7 @@ async def test_search_movies(make_get_request, create_data_movies):
 
 
 @pytest.mark.asyncio
-async def test_search_person(make_get_request, create_data_person):
+async def test_search_person(make_get_request, create_data):
     # Выполнение запроса
     response = await make_get_request('/person/search/adam')
 
