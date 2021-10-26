@@ -1,6 +1,7 @@
 import os
 import pytest
-from utils.json_read import load_json
+from tests.functional.utils.json_read import load_json
+
 
 c = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -30,7 +31,7 @@ async def create_data(es_client):
 
 
 @pytest.mark.asyncio
-async def test_search_movies(make_get_request, create_data):
+async def test_search_movies(make_get_request, create_data, redis_client):
     # Выполнение запроса
     response = await make_get_request('/film/search/dog')
 
@@ -42,9 +43,15 @@ async def test_search_movies(make_get_request, create_data):
     for i in response.body:
         assert 'dog' in i.get('title').lower()
 
+    data = await redis_client.get('movies:dog')
+
+    assert data
+
+    assert 'dog' in data.decode('UTF-8').lower()
+
 
 @pytest.mark.asyncio
-async def test_search_person(make_get_request, create_data):
+async def test_search_person(make_get_request, create_data, redis_client):
     # Выполнение запроса
     response = await make_get_request('/person/search/adam')
 
@@ -55,3 +62,9 @@ async def test_search_person(make_get_request, create_data):
 
     for i in response.body:
         assert 'adam' in i.get('full_name').lower()
+
+    data = await redis_client.get('person:adam')
+
+    assert data
+
+    assert 'adam' in data.decode('UTF-8').lower()
