@@ -13,10 +13,12 @@ router = APIRouter()
 async def genre_details(genre_id: str,
                         genre_service: GenreService = Depends(
                             get_genre_service)) -> Genre:
-    genre = await genre_service.get_by_id(genre_id)
+    body = {'query': {"match": {'_id': genre_id}}}
+    genre = await genre_service.get_film(key=genre_id, body=body)
     if not genre:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='genre not found')
+    genre = genre[0]
     return Genre(id=genre.id,
                  name=genre.name,
                  description=genre.description
@@ -29,8 +31,12 @@ async def genre_list(
         page_size: int = 50,
         genre_service: GenreService = Depends(get_genre_service)) -> list[
     Genre]:
-    genre_list = await genre_service.get_genre_list(page_number=page_number,
-                                                    page_size=page_size)
+    query = {
+         'page_number': page_number,
+         'page_size': page_size
+    }
+    key = ''.join(['genre' + str(b) for i, b in query.items()])
+    genre_list = await genre_service.get_film(key=key, query=query)
     if not genre_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='genres not found')
