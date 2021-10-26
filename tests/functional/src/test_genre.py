@@ -1,6 +1,6 @@
 import os
 import pytest
-from tests.functional.utils.json_read import load_json
+from utils.json_read import load_json
 
 
 c = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -14,20 +14,20 @@ c = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #     await es_client.index(index='genre', body=f)
 
 
-@pytest.mark.asyncio
-async def test_bulk(es_client):
+@pytest.fixture(scope='session')
+async def create_data(es_client):
     # Заполнение данных для теста
     data = await load_json(file='genre.json', index_name='genre', id='9d284e83-21f0-4073-aac0-4abee51193d8')
 
-    assert await es_client.bulk(body=data, index='genre', refresh=True)
+    await es_client.bulk(body=data, index='genre', refresh=True)
 
     data2 = await load_json(file='genre2.json', index_name='genre', id='c020dab2-e9bd-4758-95ca-dbe363462173')
 
-    assert await es_client.bulk(body=data2, index='genre', refresh=True)
+    await es_client.bulk(body=data2, index='genre', refresh=True)
 
 
 @pytest.mark.asyncio
-async def test_search_genre(make_get_request):
+async def test_search_genre(make_get_request, create_data):
     # Выполнение запроса
     response = await make_get_request('/genre/')
 
@@ -38,7 +38,7 @@ async def test_search_genre(make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_search_detailed(make_get_request):
+async def test_search_detailed(make_get_request, create_data):
     # Выполнение запроса
     response = await make_get_request('/genre/9d284e83-21f0-4073-aac0-4abee51193d8')
 
