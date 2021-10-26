@@ -1,15 +1,14 @@
 import json
-from functools import lru_cache
 from abc import ABC, abstractmethod
+
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
-from pydantic import parse_raw_as
+
 from pydantic.json import pydantic_encoder
 from pydantic import BaseModel, parse_raw_as
 from typing import Optional, Union
 from models.models import Film, Person, Genre
-# from models.models import Film
+
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
