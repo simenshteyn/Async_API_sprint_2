@@ -1,0 +1,68 @@
+[
+  {
+    "id": "some-test-id-0d757c7e4f59",
+    "imdb_rating": 6.7,
+    "genre": ["Action", "Adventure", "Sci-Fi"],
+    "title": "Test Star Trek III: The Search for Spock",
+    "description": "In the wake of Spock's ultimate deed of sacrifice.",
+    "director": ["Leonard Nimoy"],
+    "actors_names": [
+      "DeForest Kelley",
+      "James Doohan",
+      "Leonard Nimoy",
+      "William Shatner"
+    ],
+    "writers_names": [
+      "Gene Roddenberry",
+      "Harve Bennett"
+    ],
+    "actors": [
+      {"id": "1e9eee47-682b-41b8-9380-079f15bc279f", "name": "Leonard Nimoy"},
+      {"id": "4170c418-2ccb-4910-9d12-c8ab37cadfb4", "name": "William Shatner"},
+      {"id": "cbf5e978-e1cb-4b93-9817-0e82b28d4ad7", "name": "James Doohan"},
+      {"id": "f8e72201-75e8-415e-bd5a-5f51a6f9bbeb", "name": "DeForest Kelley"}
+    ],
+    "writers": [
+      {"id": "6bf6f7c8-2caa-440a-bd84-75cf8f323eae", "name": "Harve Bennett"},
+      {"id": "9ffd9416-36e5-49d8-a60e-6c95f584e7e1", "name": "Gene Roddenberry"}
+    ]
+  },
+  {
+    "id": "some-test-id-7895ce755aaf",
+    "imdb_rating": 7.3,
+    "genre": ["Action", "Adventure", "Drama", "Fantasy", "Sci-Fi", "War"],
+    "title": "Test Star Wars: Episode III - Revenge of the Sith",
+    "description": "Game that portrays the life of a jedi knight and sith lords.",
+    "director": ["Adam Schnitzer", "George Lucas"],
+    "actors_names": [
+      "Andrew Chaikin",
+      "Corey Burton",
+      "David W. Collins",
+      "Ewan McGregor",
+      "Hayden Christensen",
+      "Ian McDiarmid",
+      "Natalie Portman",
+      "Terrence 'T.C.' Carson"
+    ],
+    "writers_names": [
+      "George Lucas",
+      "Jeremy Barlow",
+      "Mario Galardo"
+    ],
+    "actors": [
+      {"id": "03b3f033-17d5-4f0e-8c05-571fef722257", "name": "David W. Collins"},
+      {"id": "0de91b1d-a5c1-40a9-9d03-31afb171e64f", "name": "Corey Burton"},
+      {"id": "20abeb51-36c8-4501-a074-a73b8948c8e2", "name": "Natalie Portman"},
+      {"id": "26df0245-adc6-4edb-9b66-664b4974ac48", "name": "Andrew Chaikin"},
+      {"id": "5def2297-422c-4555-b851-c2f0f4e950b9", "name": "Terrence 'T.C.' Carson"},
+      {"id": "a37e001f-01b8-4413-ae8c-ff0ee1a3dfe0", "name": "Hayden Christensen"},
+      {"id": "cf7cdf8e-812e-4de9-97db-7f4d188b85fa", "name": "Ewan McGregor"},
+      {"id": "e709384d-4a1a-4bf1-b017-a0418a2fbcce", "name": "Ian McDiarmid"}
+    ],
+    "writers": [
+      {"id": "0e58e16d-8b82-49ec-a76a-9e641ff10034", "name": "George Lucas"},
+      {"id": "5e27c725-a871-4945-8bd6-e2bcb5fc23a9", "name": "Jeremy Barlow"},
+      {"id": "c62c5262-0369-4bf9-887c-be793a4baf13", "name": "Mario Galardo"}
+    ]
+  }
+]

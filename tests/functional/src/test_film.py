@@ -10,6 +10,31 @@ from dataclasses import dataclass
 from functional.settings import config
 
 
+#####
+import json
+import sys
+import os
+from pathlib import Path
+c = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+async def load_json(file: str, index_name: str, id: str):
+    with open(f'{c}/testdata/{file}', 'r') as jfile:
+        movies_list = [
+                                json.dumps(
+                                    {
+                                        'index': {
+                                            '_index': f'{index_name}',
+                                            '_id': f'{id}'
+                                        }
+                                    }
+                                ),
+                                json.dumps(json.load(jfile))
+                            ]
+    return '\n'.join(movies_list) + '\n'
+#####
+
+
 @dataclass
 class HTTPResponse:
     body: dict
@@ -30,6 +55,11 @@ async def es_client():
     client = AsyncElasticsearch(hosts=f'{config.es_host}:{config.es_port}')
     yield client
     await client.close()
+
+@pytest.fixture(scope='session')
+async def load_test_data_to_es(es_client):
+    data = data = await load_json(file='genre.json', index_name='genre', id='9d284e83-21f0-4073-aac0-4abee51193d8')
+    await es_client.bulk(body=data, index='film', refresh=True)
 
 
 @pytest.fixture(scope='session')
