@@ -40,6 +40,13 @@ class HTTPResponse:
     status: int
 
 
+def extract_films(response: HTTPResponse) -> list[FilmShort]:
+    return [FilmShort(
+        id=film['id'],
+        title=film['title'],
+        imdb_rating=film['imdb_rating']) for film in response.body]
+
+
 @pytest.fixture(scope="session")
 def event_loop(request):
     """Create an instance of the default event loop for each test case."""
@@ -53,13 +60,6 @@ async def es_client():
     client = AsyncElasticsearch(hosts=f'{config.es_host}:{config.es_port}')
     yield client
     await client.close()
-
-
-@pytest.fixture(scope='session')
-async def load_test_data_to_es(es_client):
-    data = data = await load_json(file='genre.json', index_name='genre',
-                                  id='9d284e83-21f0-4073-aac0-4abee51193d8')
-    await es_client.bulk(body=data, index='film', refresh=True)
 
 
 @pytest.fixture(scope='session')
@@ -93,71 +93,88 @@ def make_get_request(session):
 @pytest.mark.asyncio
 async def test_film_response_status(make_get_request):
     response = await make_get_request('film/')
+    films = extract_films(response)
     assert response.status == HTTPStatus.OK
-    assert len(response.body) > 0
+    assert len(films) > 0
 
 
 @pytest.mark.asyncio
 async def test_film_sorted_asc_status(make_get_request):
     response = await make_get_request('film/?sort=imdb_rating')
+    films = extract_films(response)
     assert response.status == HTTPStatus.OK
-    assert len(response.body) > 0
+    assert len(films) > 1
+    assert films[0].imdb_rating <= films[1].imdb_rating
 
 
 @pytest.mark.asyncio
 async def test_film_sorted_desc_status(make_get_request):
     response = await make_get_request('film/?sort=-imdb_rating')
+    films = extract_films(response)
     assert response.status == HTTPStatus.OK
-    assert len(response.body) > 0
+    assert len(films) > 0
+    assert films[0].imdb_rating >= films[1].imdb_rating
 
 
 @pytest.mark.asyncio
 async def test_film_page_number(make_get_request):
     response = await make_get_request('film/?page_number=0')
+    films = extract_films(response)
     assert response.status == HTTPStatus.OK
-    assert len(response.body) > 0
+    assert len(films) > 0
 
 
 @pytest.mark.asyncio
 async def test_film_page_size(make_get_request):
     response = await make_get_request('film/?page_size=10')
+    films = extract_films(response)
     assert response.status == HTTPStatus.OK
-    assert len(response.body) > 0
+    assert len(films) > 0
 
 
 @pytest.mark.asyncio
 async def test_film_page_number_and_size(make_get_request):
     response = await make_get_request('film/?page_size=10&page_number=0')
+    films = extract_films(response)
     assert response.status == HTTPStatus.OK
-    assert len(response.body) > 0
+    assert len(films) > 0
 
 
 @pytest.mark.asyncio
 async def test_film_page_number_and_size_sorted_asc(make_get_request):
     response = await make_get_request('film/?page_size=10&page_number=0'
                                       '&sort=imdb_rating')
+    films = extract_films(response)
     assert response.status == HTTPStatus.OK
-    assert len(response.body) > 0
+    assert len(films) > 0
+    assert films[0].imdb_rating <= films[1].imdb_rating
 
 
 @pytest.mark.asyncio
 async def test_film_page_number_and_size_sorted_desc(make_get_request):
     response = await make_get_request('film/?page_size=10&page_number=0'
                                       '&sort=-imdb_rating')
+    films = extract_films(response)
     assert response.status == HTTPStatus.OK
     assert len(response.body) > 0
+    assert films[0].imdb_rating >= films[1].imdb_rating
 
 
 @pytest.mark.asyncio
 async def test_film_search(make_get_request):
-    response = await make_get_request('film/search/dog')
+    response_films = await make_get_request('film/')
+    film_list = extract_films(response_films)
+    film_title = film_list[0].title
+    response = await make_get_request(f'film/search/{film_title}')
+    search_films = extract_films(response)
     assert response.status == HTTPStatus.OK
-    assert len(response.body) > 0
+    assert len(search_films) > 0
 
 
 @pytest.mark.asyncio
 @pytest.mark.xfail
 async def test_film_popular_in_genre(make_get_request):
     response = await make_get_request('film/genre/foo')
+    films = extract_films(response)
     assert response.status == HTTPStatus.OK
-    assert len(response.body) > 0
+    assert len(films) > 0

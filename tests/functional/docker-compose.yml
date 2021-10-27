@@ -9,6 +9,6 @@ services:
     command: >
       sh -c "python3 /tests/functional/utils/wait_for_es.py &&
              python3 /tests/functional/utils/wait_for_redis.py &&
-             pytest /tests/functional/src"
+             pytest /tests/functional/src -s"
     extra_hosts:
       - "host.docker.internal:host-gateway"
