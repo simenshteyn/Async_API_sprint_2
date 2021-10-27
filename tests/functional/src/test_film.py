@@ -1,17 +1,19 @@
-from typing import Optional
+import json
+from pathlib import Path
 
 import pytest
 import aiohttp
 import asyncio
+
+from pydantic import BaseModel
 from elasticsearch import AsyncElasticsearch
 from http import HTTPStatus
+from typing import Optional
 
 from multidict import CIMultiDictProxy
 from dataclasses import dataclass
 
 from functional.settings import config
-
-from pydantic import BaseModel
 
 
 class Film(BaseModel):
@@ -47,6 +49,22 @@ def extract_films(response: HTTPResponse) -> list[FilmShort]:
         imdb_rating=film['imdb_rating']) for film in response.body]
 
 
+def extract_film(response: HTTPResponse) -> Film:
+    film = response.body
+    return Film(
+        id=film['id'],
+        imdb_rating=film['imdb_rating'],
+        genre=film['genre'],
+        title=film['title'],
+        description=film['description'],
+        director=film['director'],
+        actors_names=film['actors_names'],
+        writers_names=film['writers_names'],
+        actors=film['actors'],
+        writers=film['writers']
+    )
+
+
 @pytest.fixture(scope="session")
 def event_loop(request):
     """Create an instance of the default event loop for each test case."""
@@ -60,6 +78,40 @@ async def es_client():
     client = AsyncElasticsearch(hosts=f'{config.es_host}:{config.es_port}')
     yield client
     await client.close()
+
+
+@pytest.fixture(scope='session')
+async def load_testing_film_data(es_client):
+    file_path = Path(__file__).parents[1] / 'testdata/test_films.json'
+    with open(file_path) as json_file:
+        data = json.load(json_file)
+    film_list = [Film(
+        id=film['id'],
+        imdb_rating=film['imdb_rating'],
+        genre=film['genre'],
+        title=film['title'],
+        description=film['description'],
+        director=film['director'],
+        actors_names=film['actors_names'],
+        writers_names=film['writers_names'],
+        actors=film['actors'],
+        writers=film['writers']
+    ) for film in data]
+    add_result = []
+    for film in film_list:
+        add_result.append(
+            {"index": {"_index": "movies", "_id": film.id}})
+        add_result.append(film.dict())
+    add_payload = '\n'.join([json.dumps(line) for line in add_result]) + '\n'
+    await es_client.bulk(body=add_payload)
+
+    yield
+
+    del_result = []
+    for film in film_list:
+        del_result.append({"delete": {"_index": "movies", "_id": film.id}})
+    del_payload = '\n'.join([json.dumps(line) for line in del_result]) + '\n'
+    await es_client.bulk(body=del_payload)
 
 
 @pytest.fixture(scope='session')
@@ -91,7 +143,7 @@ def make_get_request(session):
 
 
 @pytest.mark.asyncio
-async def test_film_response_status(make_get_request):
+async def test_general_film_list(make_get_request, load_testing_film_data):
     response = await make_get_request('film/')
     films = extract_films(response)
     assert response.status == HTTPStatus.OK
@@ -99,7 +151,19 @@ async def test_film_response_status(make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_film_sorted_asc_status(make_get_request):
+async def test_film_search_via_uuid(make_get_request):
+    response_films = await make_get_request('film/')
+    film_list = extract_films(response_films)
+    film_uuid = film_list[0].id
+    response = await make_get_request(f'film/{film_uuid}')
+    film = extract_film(response)
+    assert response_films.status == HTTPStatus.OK
+    assert response.status == HTTPStatus.OK
+    assert film.id == film_uuid
+
+
+@pytest.mark.asyncio
+async def test_film_list_asc_sorting(make_get_request):
     response = await make_get_request('film/?sort=imdb_rating')
     films = extract_films(response)
     assert response.status == HTTPStatus.OK
@@ -108,7 +172,7 @@ async def test_film_sorted_asc_status(make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_film_sorted_desc_status(make_get_request):
+async def test_film_list_desc_sorting(make_get_request):
     response = await make_get_request('film/?sort=-imdb_rating')
     films = extract_films(response)
     assert response.status == HTTPStatus.OK
@@ -117,7 +181,7 @@ async def test_film_sorted_desc_status(make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_film_page_number(make_get_request):
+async def test_film_list_page_number(make_get_request):
     response = await make_get_request('film/?page_number=0')
     films = extract_films(response)
     assert response.status == HTTPStatus.OK
@@ -125,7 +189,7 @@ async def test_film_page_number(make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_film_page_size(make_get_request):
+async def test_film_list_page_size(make_get_request):
     response = await make_get_request('film/?page_size=10')
     films = extract_films(response)
     assert response.status == HTTPStatus.OK
@@ -133,7 +197,7 @@ async def test_film_page_size(make_get_request):
 
 
 @pytest.mark.asyncio
-async def test_film_page_number_and_size(make_get_request):
+async def test_film_list_page_number_and_size(make_get_request):
     response = await make_get_request('film/?page_size=10&page_number=0')
     films = extract_films(response)
     assert response.status == HTTPStatus.OK
@@ -178,3 +242,11 @@ async def test_film_popular_in_genre(make_get_request):
     films = extract_films(response)
     assert response.status == HTTPStatus.OK
     assert len(films) > 0
+
+
+@pytest.mark.asyncio
+async def test_es_uploading(load_testing_film_data, make_get_request):
+    response = await make_get_request('film/some-test-id-0d757c7e4f59')
+    film = extract_film(response)
+    assert film.id == "some-test-id-0d757c7e4f59"
+    assert film.title == "Test Star Trek III: The Search for Spock"
