@@ -35,7 +35,7 @@ class FilmService(BaseService):
             query = query | {
                 "query": {"match": {"genre.id": {"query": filter_genre}}}}
         film_list = await self._get_from_cache(
-            key=f'{sort_field}:{sort_type}:{filter_genre}:{self.es_index}',
+            key=f'{sort_field}:{sort_type}:{filter_genre}:{self.es_index}:{page_size}:{page_number}',
             model=self.model
         )
         if not film_list:
@@ -49,7 +49,7 @@ class FilmService(BaseService):
             await self._put_to_cache(
                 model_list=film_list,
                 expire=FILM_CACHE_EXPIRE_IN_SECONDS,
-                key=f'{sort_field}:{sort_type}:{filter_genre}:{self.es_index}'
+                key=f'{sort_field}:{sort_type}:{filter_genre}:{self.es_index}:{page_size}:{page_number}'
             )
         return film_list
 
