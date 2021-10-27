@@ -1,3 +1,5 @@
+from typing import Optional
+
 import pytest
 import aiohttp
 import asyncio
@@ -9,30 +11,26 @@ from dataclasses import dataclass
 
 from functional.settings import config
 
-
-#####
-import json
-import sys
-import os
-from pathlib import Path
-c = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from pydantic import BaseModel
 
 
-async def load_json(file: str, index_name: str, id: str):
-    with open(f'{c}/testdata/{file}', 'r') as jfile:
-        movies_list = [
-                                json.dumps(
-                                    {
-                                        'index': {
-                                            '_index': f'{index_name}',
-                                            '_id': f'{id}'
-                                        }
-                                    }
-                                ),
-                                json.dumps(json.load(jfile))
-                            ]
-    return '\n'.join(movies_list) + '\n'
-#####
+class Film(BaseModel):
+    id: str
+    imdb_rating: float
+    genre: Optional[list[dict[str, str]]] = None
+    title: str
+    description: Optional[str] = None
+    director: Optional[list[dict[str, str]]] = None
+    actors_names: Optional[list[str]] = None
+    writers_names: Optional[list[str]] = None
+    actors: Optional[list[dict[str, str]]] = None
+    writers: Optional[list[dict[str, str]]] = None
+
+
+class FilmShort(BaseModel):
+    id: str
+    title: str
+    imdb_rating: Optional[float] = None
 
 
 @dataclass
@@ -56,9 +54,11 @@ async def es_client():
     yield client
     await client.close()
 
+
 @pytest.fixture(scope='session')
 async def load_test_data_to_es(es_client):
-    data = data = await load_json(file='genre.json', index_name='genre', id='9d284e83-21f0-4073-aac0-4abee51193d8')
+    data = data = await load_json(file='genre.json', index_name='genre',
+                                  id='9d284e83-21f0-4073-aac0-4abee51193d8')
     await es_client.bulk(body=data, index='film', refresh=True)
 
 
