@@ -1,8 +1,7 @@
 import pytest
 
 from functional.conftest import HTTPResponse, extract_payload
-from functional.src.test_film import FilmShort
-from functional.src.test_person import Person
+from functional.utils.models import FilmShort, Person
 
 
 @pytest.fixture(scope='session')
