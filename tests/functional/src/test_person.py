@@ -19,7 +19,7 @@ async def test_general_person_list(make_get_request,
                                    load_testing_person_data,
                                    redis_client):
     response = await make_get_request('person/')
-    people = extract_people(response)
+    people = await extract_people(response)
     cache = await redis_client.get('person:0:20')
     assert response.status == HTTPStatus.OK
     assert len(people) > 0
@@ -29,10 +29,10 @@ async def test_general_person_list(make_get_request,
 @pytest.mark.asyncio
 async def test_person_search_via_uuid(make_get_request, redis_client):
     response_people = await make_get_request('person/')
-    person_list = extract_people(response_people)
+    person_list = await extract_people(response_people)
     person_uuid = person_list[0].id
     response = await make_get_request(f'person/{person_uuid}')
-    person = extract_person(response)
+    person = await extract_person(response)
     cache = await redis_client.get(f'{person_uuid}')
     assert response_people.status == HTTPStatus.OK
     assert response.status == HTTPStatus.OK
@@ -43,7 +43,7 @@ async def test_person_search_via_uuid(make_get_request, redis_client):
 @pytest.mark.asyncio
 async def test_person_list_page_number(make_get_request, redis_client):
     response = await make_get_request('person/?page_number=0')
-    people = extract_people(response)
+    people = await extract_people(response)
     cache = await redis_client.get('person:0:20')
     assert response.status == HTTPStatus.OK
     assert len(people) > 0
@@ -53,7 +53,7 @@ async def test_person_list_page_number(make_get_request, redis_client):
 @pytest.mark.asyncio
 async def test_person_list_page_size(make_get_request, redis_client):
     response = await make_get_request('person/?page_size=9')
-    people = extract_people(response)
+    people = await extract_people(response)
     cache = await redis_client.get('person:0:9')
     assert response.status == HTTPStatus.OK
     assert (len(people) > 0) and (len(people) < 10)
@@ -64,7 +64,7 @@ async def test_person_list_page_size(make_get_request, redis_client):
 async def test_person_list_page_number_and_size(make_get_request,
                                                 redis_client):
     response = await make_get_request('person/?page_size=8&page_number=0')
-    people = extract_people(response)
+    people = await extract_people(response)
     cache = await redis_client.get('person:0:8')
     assert response.status == HTTPStatus.OK
     assert (len(people) > 0) and (len(people) < 9)
@@ -74,10 +74,10 @@ async def test_person_list_page_number_and_size(make_get_request,
 @pytest.mark.asyncio
 async def test_person_search(make_get_request, redis_client):
     response_people = await make_get_request('person/')
-    person_list = extract_people(response_people)
+    person_list = await extract_people(response_people)
     person_name = person_list[0].full_name
     response = await make_get_request(f'person/search/{person_name}')
-    search_people = extract_people(response)
+    search_people = await extract_people(response)
     cache = await redis_client.get(f'person:{person_name}')
     assert response.status == HTTPStatus.OK
     assert len(search_people) > 0
@@ -88,7 +88,7 @@ async def test_person_search(make_get_request, redis_client):
 async def test_es_person_uploading(make_get_request, redis_client):
     response = await make_get_request(
         'person/test-person-b55c-45f6-9200-41f153a72a7a')
-    person = extract_person(response)
+    person = await extract_person(response)
     cache = await redis_client.get('test-person-b55c-45f6-9200-41f153a72a7a')
     assert person.id == "test-person-b55c-45f6-9200-41f153a72a7a"
     assert person.full_name == "Test Jonathan Knight"
