@@ -10,6 +10,8 @@ from db import elastic, redis
 
 app = FastAPI(
     title=config.PROJECT_NAME,
+    description='Learning project for Midde-Python Yandex Practicum.',
+    version=config.PROJECT_VERSION,
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
     default_response_class=ORJSONResponse,
@@ -33,7 +35,6 @@ async def shutdown():
 app.include_router(film.router, prefix='/api/v1/film', tags=['film'])
 app.include_router(genre.router, prefix='/api/v1/genre', tags=['genre'])
 app.include_router(person.router, prefix='/api/v1/person', tags=['person'])
-
 
 if __name__ == '__main__':
     uvicorn.run(
