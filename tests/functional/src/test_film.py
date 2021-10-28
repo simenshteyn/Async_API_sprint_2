@@ -1,9 +1,8 @@
 import pytest
 from http import HTTPStatus
 
-from functional.conftest import HTTPResponse, extract_payload
 from functional.utils.models import FilmShort, Film
-from functional.utils.extract import extract_films, extract_film
+from functional.utils.extract import extract_films, extract_film, extract_payload
 
 
 @pytest.fixture(scope='session')

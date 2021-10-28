@@ -1,8 +1,6 @@
 import pytest
-
-from functional.conftest import HTTPResponse, extract_payload
 from functional.utils.models import FilmShort, Person
-
+from functional.utils.extract import extract_payload
 
 @pytest.fixture(scope='session')
 async def load_testing_person_data(es_client):

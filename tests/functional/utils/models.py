@@ -1,8 +1,16 @@
 from typing import Optional
 from datetime import date
-from http import HTTPStatus
 
+from dataclasses import dataclass
 from pydantic import BaseModel
+from multidict import CIMultiDictProxy
+
+
+@dataclass
+class HTTPResponse:
+    body: dict
+    headers: CIMultiDictProxy[str]
+    status: int
 
 
 class Film(BaseModel):
