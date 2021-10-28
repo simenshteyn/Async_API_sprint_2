@@ -10,7 +10,7 @@ from db import elastic, redis
 
 app = FastAPI(
     title=config.PROJECT_NAME,
-    description='Learning project for Midde-Python Yandex Practicum.',
+    description='Learning project for Middle-Python Yandex Practicum.',
     version=config.PROJECT_VERSION,
     docs_url='/api/openapi',
     openapi_url='/api/openapi.json',
