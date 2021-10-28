@@ -1,38 +1,8 @@
 import pytest
-
-from pydantic import BaseModel
 from http import HTTPStatus
-from typing import Optional
 
-from functional.conftest import HTTPResponse, extract_payload
-
-
-class Film(BaseModel):
-    id: str
-    imdb_rating: float
-    genre: Optional[list[dict[str, str]]] = None
-    title: str
-    description: Optional[str] = None
-    director: Optional[list[dict[str, str]]] = None
-    actors_names: Optional[list[str]] = None
-    writers_names: Optional[list[str]] = None
-    actors: Optional[list[dict[str, str]]] = None
-    writers: Optional[list[dict[str, str]]] = None
-
-
-class FilmShort(BaseModel):
-    id: str
-    title: str
-    imdb_rating: Optional[float] = None
-
-
-def extract_films(response: HTTPResponse) -> list[FilmShort]:
-    return [FilmShort.parse_obj(film) for film in response.body]
-
-
-def extract_film(response: HTTPResponse) -> Film:
-    film = response.body
-    return Film.parse_obj(film)
+from functional.utils.models import FilmShort, Film
+from functional.utils.extract import extract_films, extract_film, extract_payload
 
 
 @pytest.fixture(scope='session')

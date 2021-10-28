@@ -1,27 +1,9 @@
 import pytest
 
-from pydantic import BaseModel
 from http import HTTPStatus
-from typing import Optional
-from datetime import date
 
-from functional.conftest import HTTPResponse, extract_payload
-
-
-class Person(BaseModel):
-    id: str
-    full_name: str
-    birth_date: Optional[date] = None
-    role: Optional[str] = None
-    film_ids: list[str]
-
-
-def extract_people(response: HTTPResponse) -> list[Person]:
-    return [Person.parse_obj(person) for person in response.body]
-
-
-def extract_person(response: HTTPResponse) -> Person:
-    return Person.parse_obj(response.body)
+from functional.utils.models import Person
+from functional.utils.extract import extract_people, extract_person, extract_payload
 
 
 @pytest.fixture(scope='session')
