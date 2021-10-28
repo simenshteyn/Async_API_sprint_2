@@ -1,5 +1,10 @@
-{
-    "id": "273bd379-fdc8-4133-acc7-7be18ef1b699",
+[{
+    "id": "some-test-id-acc7-7be18ef1b699",
     "title": "Dog Star",
     "imdb_rating": 7.1
-}
+},
+{
+    "id": "some-test-id-97f8-9ba67cd823a9",
+    "title": "Dog Star Man",
+    "imdb_rating": 6.4
+}]

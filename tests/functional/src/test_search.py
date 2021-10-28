@@ -1,70 +1,48 @@
-import os
 import pytest
-from tests.functional.utils.json_read import load_json
 
-
-c = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from functional.conftest import HTTPResponse, extract_payload
+from functional.src.test_film import FilmShort
+from functional.src.test_person import Person
 
 
 @pytest.fixture(scope='session')
-async def create_data(es_client):
-    # Заполнение данных для теста
-    data = await load_json(file='search_movie.json', index_name='movies', id='273bd379-fdc8-4133-acc7-7be18ef1b699')
+async def load_testing_person_data(es_client):
+    payload = await extract_payload('search_person.json', Person, 'person')
+    await es_client.bulk(body=payload[0])
+    yield
+    await es_client.bulk(body=payload[1])
 
-    await es_client.bulk(body=data, index='movies', refresh=True)
 
-    data2 = await load_json(file='search_movie2.json', index_name='movies', id='d718c261-e954-4615-97f8-9ba67cd823a9')
-
-    await es_client.bulk(body=data2, index='movies', refresh=True)
-
-    data_person = await load_json(
-        file='search_person.json', index_name='person', id='2cca941b-e05e-4314-9650-70155c752fa0'
-    )
-
-    await es_client.bulk(body=data_person, index='person', refresh=True)
-
-    data_person2 = await load_json(
-        file='search_person.json', index_name='person', id='2d6f6284-13ce-4d25-9453-c4335432c116'
-    )
-
-    await es_client.bulk(body=data_person2, index='person', refresh=True)
+@pytest.fixture(scope='session')
+async def load_testing_movies_data(es_client):
+    payload = await extract_payload('search_movie.json', FilmShort, 'movies')
+    await es_client.bulk(body=payload[0])
+    yield
+    await es_client.bulk(body=payload[1])
 
 
 @pytest.mark.asyncio
-async def test_search_movies(make_get_request, create_data, redis_client):
-    # Выполнение запроса
-    response = await make_get_request('/film/search/dog')
-
-    # Проверка результата./
+async def test_search_movies(make_get_request, load_testing_movies_data, redis_client):
+    response = await make_get_request(f'film/search/dog')
     assert response.status == 200
-
     assert len(response.body) != 0
 
     for i in response.body:
         assert 'dog' in i.get('title').lower()
-
     data = await redis_client.get('movies:dog')
-
     assert data
-
     assert 'dog' in data.decode('UTF-8').lower()
 
 
 @pytest.mark.asyncio
-async def test_search_person(make_get_request, create_data, redis_client):
-    # Выполнение запроса
-    response = await make_get_request('/person/search/adam')
+async def test_search_person(make_get_request, load_testing_person_data, redis_client):
+    response = await make_get_request('person/search/adam')
 
-    # Проверка результата./
     assert response.status == 200
-
     assert len(response.body) != 0
 
     for i in response.body:
         assert 'adam' in i.get('full_name').lower()
-
     data = await redis_client.get('person:adam')
-
     assert data
-
     assert 'adam' in data.decode('UTF-8').lower()
