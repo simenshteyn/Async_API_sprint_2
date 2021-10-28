@@ -38,3 +38,9 @@ class Person(BaseModel):
     birth_date: Optional[date] = None
     role: Optional[str] = None
     film_ids: list[str]
+
+
+class Genre(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
