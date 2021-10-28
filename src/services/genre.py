@@ -9,6 +9,7 @@ from db.elastic import get_elastic
 from db.redis import get_redis
 from models.models import Genre
 from services.base import BaseService
+from services.caching import RedisService
 
 GENRE_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
@@ -33,4 +34,4 @@ def get_genre_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic),
 ) -> GenreService:
-    return GenreService(redis, elastic)
+    return GenreService(RedisService(redis), elastic)

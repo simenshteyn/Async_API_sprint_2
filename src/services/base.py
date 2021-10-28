@@ -1,15 +1,17 @@
 import json
 from typing import Optional
 
-from aioredis import Redis
+# from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from pydantic import BaseModel, parse_raw_as
 from pydantic.json import pydantic_encoder
 
+from services.caching import Cacheable
+
 
 class BaseService:
-    def __init__(self, redis: Redis, elastic: AsyncElasticsearch):
-        self.redis = redis
+    def __init__(self, cache: Cacheable, elastic: AsyncElasticsearch):
+        self.cache = cache
         self.elastic = elastic
 
     async def _get_by_id(
@@ -25,7 +27,7 @@ class BaseService:
 
     async def _get_by_id_from_cache(
             self, id: str, model: BaseModel) -> Optional[BaseModel]:
-        data = await self.redis.get(id)
+        data = await self.cache.get(id)
         if not data:
             return None
         return model.parse_raw(data)
@@ -36,7 +38,8 @@ class BaseService:
         return model(**doc['_source'])
 
     async def _put_by_id_to_cache(self, model: BaseModel, expire: int):
-        await self.redis.set(model.id, model.json(), expire=expire)
+        await self.cache.set(model.id, model.json(), expire=expire)
+
 
     async def _get_by_search(self, search_string: str, search_field: str,
                              expire: int, es_index: str, model: BaseModel
@@ -101,11 +104,12 @@ class BaseService:
     async def _put_to_cache(self, model_list: list[BaseModel],
                             expire: int, key: str):
         list_json = json.dumps(model_list, default=pydantic_encoder)
-        await self.redis.set(key, list_json, expire=expire)
+        await self.cache.set(key, list_json, expire=expire)
+
 
     async def _get_from_cache(
             self, key: str, model: BaseModel) -> Optional[list[BaseModel]]:
-        data = await self.redis.get(key)
+        data = await self.cache.get(key)
         if not data:
             return None
         return parse_raw_as(list[model], data)
