@@ -97,4 +97,4 @@ class FilmService(BaseService):
 def get_film_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic)) -> FilmService:
-    return FilmService(cache=RedisService(redis), elastic=elastic)
+    return FilmService(RedisService(redis), elastic)
