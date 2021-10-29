@@ -35,7 +35,8 @@ async def genre_list(
          'page_number': page_number,
          'page_size': page_size
     }
-    key = ''.join(['genre' + str(b) for i, b in query.items()])
+    key = f'{"genre"}:{page_number}:{page_size}'
+    # key = ''.join(['genre' + str(b) for i, b in query.items()])
     genre_list = await genre_service.get_film(key=key, query=query)
     if not genre_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,

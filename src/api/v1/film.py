@@ -21,7 +21,8 @@ async def films_sorted(sort: str = 'imdb_rating',
          'page_number': page_number,
          'page_size': page_size
     }
-    key = ''.join([str(b) for i, b in query.items()])
+    key = f'{query["sort_field"]}:{query["sort_type"]}:{filter_genre}:{"movies"}:{page_size}:{page_number}'
+    # key = ''.join([str(b) for i, b in query.items()])
     if filter_genre:
         body = {"query": {"match": {"genre.id": {"query": query.get('filter_genre')}}}}
     else:
@@ -32,7 +33,6 @@ async def films_sorted(sort: str = 'imdb_rating',
                             detail='film not found')
     result = []
     for film in film_list:
-        print(film_list)
         result.append(FilmShort(id=film.id,
                                 title=film.title,
                                 imdb_rating=film.imdb_rating, ))
@@ -52,7 +52,7 @@ async def films_search(film_search_string: str,
                     }
                 }
             }}
-    film_list = await film_service.get_film(key=film_search_string, body=body)
+    film_list = await film_service.get_film(key=f'movies:{film_search_string}', body=body)
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')
@@ -90,8 +90,7 @@ async def film_details(film_id: str,
 @router.get('/{film_id}/alike', response_model=list[FilmShort],
             response_model_exclude_unset=True)
 async def film_alike(film_id: str, film_service: FilmService = Depends(get_film_service)) -> list[FilmShort]:
-    key = 'alike'+film_id
-    film_list = await film_service.get_film_alike(film_id=film_id, key=key)
+    film_list = await film_service.get_film_alike(film_id=film_id, key=f'alike:{film_id}')
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film alike not found')
@@ -115,7 +114,8 @@ async def popular_in_genre(genre_id: str,
                 'page_number': 0,
                 'page_size': 30
             }
-    key = ''.join([str(b) for i, b in query.items()])
+    # key = ''.join([str(b) for i, b in query.items()])
+    key = f'{query["sort_field"]}:{query["sort_type"]}:{genre_id}:{"movies"}:{query["page_size"]}:{query["page_number"]}'
     film_list = await film_service.get_film(key=key, query=query)
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,

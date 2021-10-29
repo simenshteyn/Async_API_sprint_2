@@ -3,7 +3,7 @@ from typing import Optional, Union
 from abc import abstractmethod
 
 from pydantic.json import pydantic_encoder
-
+from pydantic import parse_raw_as
 from .caching import Cacheable
 from models.models import Film, Person, Genre
 
@@ -31,7 +31,7 @@ class BaseService:
 
     async def get_film(self,
                        key: str, query: dict = None, body: dict = None) -> Optional[Union[Film, Person, Genre]]:
-        film = await self.cache.get(key=key)
+        film = await self._get_film_sorted_from_cache(key=key)
         if not film:
             if not body:
                 body = {'query': {"match_all": {}}}
@@ -40,6 +40,15 @@ class BaseService:
                 return None
             await self.cache.set(key=key, value=json.dumps(film, default=pydantic_encoder), expire=CACHE_EXPIRE)
         return film
+
+    async def _get_film_sorted_from_cache(self, key: str) -> Optional[Union[Film, Person, Genre]]:
+        data = await self.cache.get(key)
+        if not data:
+            return None
+        try:
+            return parse_raw_as(list[self.model], data)
+        except:
+            return self.model.parse_raw(data)
 
     async def _get_film_by_search_from_elastic(
             self, query: dict = None, body: dict = None) -> Optional[Union[Film, Person, Genre]]:

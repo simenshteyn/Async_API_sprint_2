@@ -1,16 +1,17 @@
+import json
 from functools import lru_cache
 
 from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
-
+from pydantic.json import pydantic_encoder
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.models import Film
 from services.base import BaseService
 from .caching import RedisService
 
-FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
+CACHE_EXPIRE = 60 * 5
 
 
 class FilmService(BaseService):
@@ -35,7 +36,7 @@ class FilmService(BaseService):
                 alike_films = await self._get_film_by_search_from_elastic(query=query, body=body)
                 if alike_films:
                     film_list.extend(alike_films)
-            await self._put_film_to_cache(key=key, film_list=list(film_list))
+            await self.cache.set(key=key, value=json.dumps(list(film_list), default=pydantic_encoder), expire=CACHE_EXPIRE)
 
         return film_list
 

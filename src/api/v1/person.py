@@ -37,7 +37,8 @@ async def person_list(
          'page_number': page_number,
          'page_size': page_size
     }
-    key = ''.join(['person' + str(b) for i, b in query.items()])
+    key = f'{"person"}:{page_number}:{page_size}'
+    # key = ''.join(['person' + str(b) for i, b in query.items()])
     person_list = await person_service.get_film(key=key, query=query)
     if not person_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
@@ -62,7 +63,7 @@ async def films_search(person_search_string: str,
                     }
                 }
             }}
-    person_list = await person_service.get_film(key=person_search_string, body=body)
+    person_list = await person_service.get_film(key=f'person:{person_search_string}', body=body)
 
     if not person_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
