@@ -9,19 +9,28 @@ router = APIRouter()
 
 
 @router.get('/', response_model=list[Film], response_model_exclude_unset=True)
-async def films_sorted(sort: str = 'imdb_rating',
+async def films_sorted(sort: str = None,
                        filter_genre: str = None,
                        page_number: int = 0,
                        page_size: int = 20,
                        film_service: FilmService = Depends(get_film_service)):
+    if not sort:
+        sort_field = 'imdb_rating'
+        sort_type = 'desc'
+    else:
+        sort_field = 'imdb_rating' if sort.endswith('imdb_rating') else None
+        if not sort_field:
+            raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
+                                detail='sorting not found')
+        sort_type = 'desc' if sort.startswith('-') else 'asc'
     query = {
-         'sort_field': 'imdb_rating',
-         'sort_type': 'asc' if sort == 'imdb_rating' else 'desc',
+         'sort_field': sort_field,
+         'sort_type': sort_type,
          'filter_genre': filter_genre,
          'page_number': page_number,
          'page_size': page_size
     }
-    key = f'{query["sort_field"]}:{query["sort_type"]}:{filter_genre}:{"movies"}:{page_size}:{page_number}'
+    key = f'{sort_field}:{sort_type}:{filter_genre}:{"movies"}:{page_size}:{page_number}'
     # key = ''.join([str(b) for i, b in query.items()])
     if filter_genre:
         body = {"query": {"match": {"genre.id": {"query": query.get('filter_genre')}}}}
