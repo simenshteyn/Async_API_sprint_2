@@ -3,3 +3,5 @@ PostgresData.txt
 volumes/
 elasticdb/
 postgres_data/
+tests/
+tasks/

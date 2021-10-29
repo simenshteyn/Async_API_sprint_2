@@ -36,7 +36,9 @@ class FilmService(BaseService):
                 alike_films = await self._get_film_by_search_from_elastic(query=query, body=body)
                 if alike_films:
                     film_list.extend(alike_films)
-            await self.cache.set(key=key, value=json.dumps(list(film_list), default=pydantic_encoder), expire=CACHE_EXPIRE)
+            await self.cache.set(
+                key=key, value=json.dumps(list(film_list), default=pydantic_encoder
+                                          ), expire=CACHE_EXPIRE)
 
         return film_list
 

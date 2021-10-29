@@ -10,8 +10,6 @@ from models.models import Person
 from services.base import BaseService
 from .caching import RedisService
 
-PERSON_CACHE_EXPIRE_IN_SECONDS = 60 * 5
-
 
 class PersonService(BaseService):
     es_index = 'person'

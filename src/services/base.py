@@ -6,7 +6,6 @@ from pydantic.json import pydantic_encoder
 from pydantic import parse_raw_as
 from .caching import Cacheable
 from models.models import Film, Person, Genre
-
 from elasticsearch import AsyncElasticsearch
 
 
@@ -19,6 +18,7 @@ class BaseService:
     @abstractmethod
     def es_index(self) -> str:
         pass
+
 
     @staticmethod
     @abstractmethod
