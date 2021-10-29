@@ -6,9 +6,9 @@ from functional.utils.extract import extract_payload
 @pytest.fixture(scope='session')
 async def load_testing_genre_data(es_client):
     payload = await extract_payload('search_genre.json', Genre, 'genre')
-    await es_client.bulk(body=payload[0])
+    await es_client.bulk(body=payload[0], index='genre', refresh=True)
     yield
-    await es_client.bulk(body=payload[1])
+    await es_client.bulk(body=payload[1], index='genre', refresh=True)
 
 
 @pytest.mark.asyncio

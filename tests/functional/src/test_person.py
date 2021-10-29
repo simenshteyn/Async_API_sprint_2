@@ -9,9 +9,9 @@ from functional.utils.extract import extract_people, extract_person, extract_pay
 @pytest.fixture(scope='session')
 async def load_testing_person_data(es_client):
     payload = await extract_payload('test_person.json', Person, 'person')
-    await es_client.bulk(body=payload[0])
+    await es_client.bulk(body=payload[0], index='person', refresh=True)
     yield
-    await es_client.bulk(body=payload[1])
+    await es_client.bulk(body=payload[1], index='person', refresh=True)
 
 
 @pytest.mark.asyncio

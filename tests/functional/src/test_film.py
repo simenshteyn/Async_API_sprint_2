@@ -8,9 +8,9 @@ from functional.utils.extract import extract_films, extract_film, extract_payloa
 @pytest.fixture(scope='session')
 async def load_testing_film_data(es_client):
     payload = await extract_payload('test_films.json', Film, 'movies')
-    await es_client.bulk(body=payload[0])
+    await es_client.bulk(body=payload[0], index='movies', refresh=True)
     yield
-    await es_client.bulk(body=payload[1])
+    await es_client.bulk(body=payload[1], index='movies', refresh=True)
 
 
 @pytest.mark.asyncio
