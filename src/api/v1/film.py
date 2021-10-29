@@ -31,12 +31,8 @@ async def films_sorted(sort: str = None,
          'page_size': page_size
     }
     key = f'{sort_field}:{sort_type}:{filter_genre}:{"movies"}:{page_size}:{page_number}'
-    # key = ''.join([str(b) for i, b in query.items()])
-    if filter_genre:
-        body = {"query": {"match": {"genre.id": {"query": query.get('filter_genre')}}}}
-    else:
-        body = {'query': {"match_all": {}}}
-    film_list = await film_service.get_request(key=key, query=query, body=body)
+
+    film_list = await film_service.get_request(key=key, query=query, q=filter_genre)
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')
@@ -50,15 +46,11 @@ async def films_sorted(sort: str = None,
 async def films_search(film_search_string: str,
                        film_service: FilmService = Depends(
                            get_film_service)) -> list[FilmShort]:
-    body = {"query": {
-                "match": {
-                    "title": {
-                        "query": film_search_string,
-                        "fuzziness": "auto"
-                    }
-                }
-            }}
-    film_list = await film_service.get_request(key=f'movies:{film_search_string}', body=body)
+
+    film_list = await film_service.get_request(
+        key=f'movies:{film_search_string}',
+        q=film_search_string
+    )
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')
@@ -72,8 +64,7 @@ async def films_search(film_search_string: str,
 async def film_details(film_id: str,
                        film_service: FilmService = Depends(
                            get_film_service)) -> Film:
-    body = {'query': {"match": {'_id': film_id}}}
-    film = await film_service.get_request(key=film_id, body=body)
+    film = await film_service.get_request(key=film_id, q=film_id)
     if not film:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')
@@ -114,9 +105,8 @@ async def popular_in_genre(genre_id: str,
                 'page_number': 0,
                 'page_size': 30
             }
-    # key = ''.join([str(b) for i, b in query.items()])
     key = f'{query["sort_field"]}:{query["sort_type"]}:{genre_id}:{"movies"}:{query["page_size"]}:{query["page_number"]}'
-    film_list = await film_service.get_request(key=key, query=query)
+    film_list = await film_service.get_request(key=key, query=query, q=genre_id)
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film alike not found')

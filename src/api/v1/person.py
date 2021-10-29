@@ -13,8 +13,7 @@ router = APIRouter()
 async def person_details(person_id: str,
                          person_service: PersonService = Depends(
                              get_person_service)) -> Person:
-    body = {'query': {"match": {'_id': person_id}}}
-    person = await person_service.get_request(key=person_id, body=body)
+    person = await person_service.get_request(key=person_id, q=person_id)
     if not person:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='person not found')
@@ -38,8 +37,8 @@ async def person_list(
          'page_size': page_size
     }
     key = f'{"person"}:{page_number}:{page_size}'
-    # key = ''.join(['person' + str(b) for i, b in query.items()])
     person_list = await person_service.get_request(key=key, query=query)
+
     if not person_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='persons not found')
@@ -55,15 +54,10 @@ async def person_list(
 async def films_search(person_search_string: str,
                        person_service: PersonService = Depends(
                            get_person_service)) -> list[Person]:
-    body = {"query": {
-                "match": {
-                    "full_name": {
-                        "query": person_search_string,
-                        "fuzziness": "auto"
-                    }
-                }
-            }}
-    person_list = await person_service.get_request(key=f'person:{person_search_string}', body=body)
+    person_list = await person_service.get_request(
+        key=f'person:{person_search_string}',
+        q=person_search_string
+    )
 
     if not person_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,

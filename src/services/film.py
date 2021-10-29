@@ -10,6 +10,7 @@ from db.redis import get_redis
 from models.models import Film
 from services.base import BaseService
 from .caching import RedisService
+from .es_search import EsService
 
 CACHE_EXPIRE = 60 * 5
 
@@ -17,23 +18,25 @@ CACHE_EXPIRE = 60 * 5
 class FilmService(BaseService):
     es_index = 'movies'
     model = Film
+    es_field = ['id', 'title']
 
     async def get_film_alike(self, film_id: str, key: str) -> list[Film] or None:
         film_list = await self._get_film_sorted_from_cache(key)
         if not film_list:
-            body = {'query': {"match": {'_id': film_id}}}
-            get_films = await self.get_request(key=film_id, body=body)
+            get_films = await self.get_request(key=film_id, q=film_id)
             film = get_films[0]
             film_list = []
+            query = {
+                'sort_field': 'imdb_rating',
+                'sort_type': 'desc',
+                'page_number': 0,
+                'page_size': 10
+            }
             for genre in film.genre:
-                query = {
-                    'sort_field': 'imdb_rating',
-                    'sort_type': 'desc',
-                    'page_number': 0,
-                    'page_size': 10
-                }
-                body = {"query": {"match": {"genre.id": {"query": genre['id']}}}}
-                alike_films = await self._get_film_by_search_from_elastic(query=query, body=body)
+                alike_films = await self._get_film_by_search_from_elastic(
+                    query=query,
+                    q=genre['id']
+                )
                 if alike_films:
                     film_list.extend(alike_films)
             await self.cache.set(
@@ -47,4 +50,4 @@ class FilmService(BaseService):
 def get_film_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic)) -> FilmService:
-    return FilmService(RedisService(redis), elastic)
+    return FilmService(RedisService(redis), EsService(elastic))

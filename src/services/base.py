@@ -6,7 +6,7 @@ from pydantic.json import pydantic_encoder
 from pydantic import parse_raw_as
 from .caching import Cacheable
 from models.models import Film, Person, Genre
-from elasticsearch import AsyncElasticsearch
+from .es_search import EsService
 
 
 CACHE_EXPIRE = 60 * 5
@@ -24,17 +24,25 @@ class BaseService:
     def model(*args, **kwargs) -> Optional[Union[Film, Person, Genre]]:
         pass
 
-    def __init__(self, cache: Cacheable, elastic: AsyncElasticsearch):
+    @staticmethod
+    @abstractmethod
+    def es_field(*args) -> list:
+        pass
+
+    def __init__(self, cache: Cacheable, elastic: EsService):
         self.cache = cache
         self.elastic = elastic
 
     async def get_request(self,
-                       key: str, query: dict = None, body: dict = None) -> Optional[Union[Film, Person, Genre]]:
+                          key: str,
+                          query: dict = None,
+                          q: str = None) -> Union:
         film = await self._get_film_sorted_from_cache(key=key)
         if not film:
-            if not body:
-                body = {'query': {"match_all": {}}}
-            film = await self._get_film_by_search_from_elastic(query=query, body=body)
+            film = await self._get_film_by_search_from_elastic(
+                query=query,
+                q=q,
+            )
             if not film:
                 return None
             await self.cache.set(key=key, value=json.dumps(film, default=pydantic_encoder), expire=CACHE_EXPIRE)
@@ -50,14 +58,16 @@ class BaseService:
             return self.model.parse_raw(data)
 
     async def _get_film_by_search_from_elastic(
-            self, query: dict = None, body: dict = None) -> Optional[Union[Film, Person, Genre]]:
+            self,
+            query: dict = None,
+            q: str = None,) -> Optional[Union[Film, Person, Genre]]:
 
-        doc = await self.elastic.search(
-            index=self.es_index,
-            body = body,
-            size = query.get('page_size') if query else None,
-            from_ = query.get('page_number') * query.get('page_size') if query else None,
-            sort = f'{query.get("sort_field")}:{query.get("sort_type")}' if query else None,
+        doc = await self.elastic.get_search(
+            es_index=self.es_index,
+            func_name='body_search' if q else None,
+            field=self.es_field,
+            q=q,
+            query=query,
         )
         result = []
         for movie in doc['hits']['hits']:
