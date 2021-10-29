@@ -38,7 +38,7 @@ if __name__ == '__main__':
         EsSaver(es_conf).load(query_postgres_film(name_index), name_index=name_index)
 
     save_elastic(schemas='schemas_es/schemas_film.json', name_index='movies')
-    save_elastic(schemas='schemas_es/search_genre.json', name_index='genre')
+    save_elastic(schemas='schemas_es/schemas_genre.json', name_index='genre')
     save_elastic(schemas='schemas_es/schemas_person.json', name_index='person')
 
     State(JsonFileStorage('PostgresDataState.txt')).set_state(str('my_key'), value=str(datetime.now()))
