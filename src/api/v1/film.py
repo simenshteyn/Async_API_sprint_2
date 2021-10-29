@@ -36,7 +36,7 @@ async def films_sorted(sort: str = None,
         body = {"query": {"match": {"genre.id": {"query": query.get('filter_genre')}}}}
     else:
         body = {'query': {"match_all": {}}}
-    film_list = await film_service.get_film(key=key, query=query, body=body)
+    film_list = await film_service.get_request(key=key, query=query, body=body)
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')
@@ -58,7 +58,7 @@ async def films_search(film_search_string: str,
                     }
                 }
             }}
-    film_list = await film_service.get_film(key=f'movies:{film_search_string}', body=body)
+    film_list = await film_service.get_request(key=f'movies:{film_search_string}', body=body)
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')
@@ -73,7 +73,7 @@ async def film_details(film_id: str,
                        film_service: FilmService = Depends(
                            get_film_service)) -> Film:
     body = {'query': {"match": {'_id': film_id}}}
-    film = await film_service.get_film(key=film_id, body=body)
+    film = await film_service.get_request(key=film_id, body=body)
     if not film:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')
@@ -116,7 +116,7 @@ async def popular_in_genre(genre_id: str,
             }
     # key = ''.join([str(b) for i, b in query.items()])
     key = f'{query["sort_field"]}:{query["sort_type"]}:{genre_id}:{"movies"}:{query["page_size"]}:{query["page_number"]}'
-    film_list = await film_service.get_film(key=key, query=query)
+    film_list = await film_service.get_request(key=key, query=query)
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film alike not found')

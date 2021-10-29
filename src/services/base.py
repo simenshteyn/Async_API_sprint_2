@@ -19,7 +19,6 @@ class BaseService:
     def es_index(self) -> str:
         pass
 
-
     @staticmethod
     @abstractmethod
     def model(*args, **kwargs) -> Optional[Union[Film, Person, Genre]]:
@@ -29,7 +28,7 @@ class BaseService:
         self.cache = cache
         self.elastic = elastic
 
-    async def get_film(self,
+    async def get_request(self,
                        key: str, query: dict = None, body: dict = None) -> Optional[Union[Film, Person, Genre]]:
         film = await self._get_film_sorted_from_cache(key=key)
         if not film:

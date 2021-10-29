@@ -22,7 +22,7 @@ class FilmService(BaseService):
         film_list = await self._get_film_sorted_from_cache(key)
         if not film_list:
             body = {'query': {"match": {'_id': film_id}}}
-            get_films = await self.get_film(key=film_id, body=body)
+            get_films = await self.get_request(key=film_id, body=body)
             film = get_films[0]
             film_list = []
             for genre in film.genre:
