@@ -10,6 +10,8 @@ from db.redis import get_redis
 from models.models import Genre
 from services.base import BaseService
 from services.caching import RedisService
+from services.backoff import backoff
+
 
 GENRE_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
@@ -29,6 +31,7 @@ class GenreService(BaseService):
                                     self.es_index, self.model)
 
 
+@backoff()
 @lru_cache()
 def get_genre_service(
         redis: Redis = Depends(get_redis),

@@ -10,6 +10,8 @@ from db.redis import get_redis
 from models.models import Person
 from services.base import BaseService
 from services.caching import RedisService
+from services.backoff import backoff
+
 
 PERSON_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
@@ -35,6 +37,7 @@ class PersonService(BaseService):
                                          self.es_index, self.model)
 
 
+@backoff()
 @lru_cache()
 def get_person_service(
         redis: Redis = Depends(get_redis),

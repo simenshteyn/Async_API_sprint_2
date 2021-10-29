@@ -106,7 +106,6 @@ class BaseService:
         list_json = json.dumps(model_list, default=pydantic_encoder)
         await self.cache.set(key, list_json, expire=expire)
 
-
     async def _get_from_cache(
             self, key: str, model: BaseModel) -> Optional[list[BaseModel]]:
         data = await self.cache.get(key)
