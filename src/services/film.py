@@ -8,7 +8,7 @@ from db.elastic import get_elastic
 from db.redis import get_redis
 from models.models import Film
 from services.base import BaseService
-
+from .caching import RedisService
 
 FILM_CACHE_EXPIRE_IN_SECONDS = 60 * 5
 
@@ -44,4 +44,4 @@ class FilmService(BaseService):
 def get_film_service(
         redis: Redis = Depends(get_redis),
         elastic: AsyncElasticsearch = Depends(get_elastic)) -> FilmService:
-    return FilmService(redis, elastic)
+    return FilmService(RedisService(redis), elastic)

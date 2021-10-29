@@ -21,7 +21,8 @@ async def films_sorted(sort: str = 'imdb_rating',
          'page_number': page_number,
          'page_size': page_size
     }
-    key = ''.join([str(b) for i, b in query.items()])
+    key = f'{query["sort_field"]}:{query["sort_type"]}:{filter_genre}:{"movies"}:{page_size}:{page_number}',
+    # key = ''.join([str(b) for i, b in query.items()])
     if filter_genre:
         body = {"query": {"match": {"genre.id": {"query": query.get('filter_genre')}}}}
     else:

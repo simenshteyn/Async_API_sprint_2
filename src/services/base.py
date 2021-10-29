@@ -2,11 +2,18 @@ import json
 from typing import Optional, Union
 from abc import ABC, abstractmethod
 
-from .redis_cache import RedisCache
+from .caching import Cacheable
 from models.models import Film, Person, Genre
 
+from db.redis import get_redis
+from aioredis import Redis
+from elasticsearch import AsyncElasticsearch
+from fastapi import Depends
 
-class BaseService(RedisCache):
+CACHE_EXPIRE = 60 * 5
+
+
+class BaseService:
 
     @property
     @abstractmethod
@@ -18,16 +25,20 @@ class BaseService(RedisCache):
     def model(*args, **kwargs) -> Optional[Union[Film, Person, Genre]]:
         pass
 
+    def __init__(self, cache: Cacheable, elastic: AsyncElasticsearch):
+        self.cache = cache
+        self.elastic = elastic
+
     async def get_film(self,
                        key: str, query: dict = None, body: dict = None) -> Optional[Union[Film, Person, Genre]]:
-        film = await self._get_film_sorted_from_cache(key=key)
+        film = await self.cache.get(key=key)
         if not film:
             if not body:
                 body = {'query': {"match_all": {}}}
             film = await self._get_film_by_search_from_elastic(query=query, body=body)
             if not film:
                 return None
-            await self._put_film_to_cache(key=key, film_list=film)
+            await self.cache.set(key=key, value=film, expire=CACHE_EXPIRE)
         return film
 
     async def _get_film_by_search_from_elastic(

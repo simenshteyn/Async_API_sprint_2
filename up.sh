@@ -13,11 +13,11 @@ echo 'Start Redis'
 docker-compose up --build -d ma_redis
 docker-compose up --build -d ma_es01
 echo "Загрузка схем индексов в elastic"
-sleep 40
+sleep 20
 docker-compose --profile=init up --build -d es_init
 echo "Перенос данных в elastic"
-sleep 40
+sleep 20
 docker-compose up --build -d ma_etl
-echo 'Start FastAPI'
-docker-compose up --build -d ma_fastapi
+#echo 'Start FastAPI'
+#docker-compose up --build -d ma_fastapi
 rm src/requirements.txt
