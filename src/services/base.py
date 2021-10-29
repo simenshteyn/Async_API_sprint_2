@@ -1,14 +1,14 @@
 import json
 from typing import Optional, Union
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+
+from pydantic.json import pydantic_encoder
 
 from .caching import Cacheable
 from models.models import Film, Person, Genre
 
-from db.redis import get_redis
-from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
-from fastapi import Depends
+
 
 CACHE_EXPIRE = 60 * 5
 
@@ -38,7 +38,7 @@ class BaseService:
             film = await self._get_film_by_search_from_elastic(query=query, body=body)
             if not film:
                 return None
-            await self.cache.set(key=key, value=film, expire=CACHE_EXPIRE)
+            await self.cache.set(key=key, value=json.dumps(film, default=pydantic_encoder), expire=CACHE_EXPIRE)
         return film
 
     async def _get_film_by_search_from_elastic(
