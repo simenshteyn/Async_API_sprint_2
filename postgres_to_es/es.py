@@ -9,20 +9,16 @@ from utils import backoff
 logger = logging.getLogger('ESLoader')
 
 
-class EsSaver:
+class Es:
     def __init__(self, host: list, state_key='my_key'):
         self.client = Elasticsearch(host)
         self.movies_list = []
         self.key = state_key
 
-    @backoff()
-    def create_index(self, file_path, name_index) -> None:
-        with open(file_path, 'r') as file:
-            f = json.load(file)
-        if self.client.indices.exists(index=name_index):
-            return logger.warning(f'{datetime.now()}\n\nindex movies already exist:')
 
-        self.client.index(index=name_index, body=f)
+class EsSaver(Es):
+    def __init__(self, host: list, state_key='my_key'):
+        super().__init__(host, state_key)
 
     @backoff()
     def load_data(self, name_index) -> None:
