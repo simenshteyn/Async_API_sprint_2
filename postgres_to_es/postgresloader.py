@@ -7,12 +7,16 @@ from db_query import load_person_q, load_film_id, full_load, query_all_genre, lo
 from schemas import Film, Genre, Person
 
 
-class PostgresLoader:
-    """Класс для выгрузки данных из postgres"""
-    def __init__(self, pg_conn: _connection, state_key='my_key'):
+class PostgresConnect:
+    def __init__(self, pg_conn: _connection):
         self.conn = pg_conn
         self.cursor = self.conn.cursor(cursor_factory=DictCursor)
         self.batch_size = 100
+
+
+class PostgresLoader(PostgresConnect):
+    def __init__(self, pg_conn: _connection, state_key='my_key'):
+        super().__init__(pg_conn)
         self.key = state_key
         self.state_key = State(JsonFileStorage('PostgresDataState.txt')).get_state(state_key)
         self.data = []
@@ -47,6 +51,9 @@ class PostgresLoader:
         inx = re.search('as pfw ON p.id = pfw.person_id', query).end()
         return f"{query[:inx]} WHERE updated_at > '{self.state_key}' {query[inx:]}"
 
+
+class LoadMovies(PostgresLoader):
+
     def loader_movies(self) -> list:
         """Запрос на получение всех данных по фильмам"""
         self.cursor.execute(self.load_all_film_work_person())
@@ -73,6 +80,8 @@ class PostgresLoader:
 
         return self.data
 
+
+class LoadGenre(PostgresLoader):
     def loader_genre(self) -> list:
         """Запрос на получение всех жанров"""
         self.cursor.execute(self.load_genre())
@@ -92,6 +101,8 @@ class PostgresLoader:
 
         return self.data
 
+
+class LoadPerson(PostgresLoader):
     def loader_person(self) -> list:
         """Запрос на получение всех персон"""
         self.cursor.execute(self.load_person())
