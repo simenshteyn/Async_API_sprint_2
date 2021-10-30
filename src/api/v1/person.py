@@ -13,10 +13,11 @@ router = APIRouter()
 async def person_details(person_id: str,
                          person_service: PersonService = Depends(
                              get_person_service)) -> Person:
-    person = await person_service.get_by_id(person_id)
+    person = await person_service.get_request(q=person_id)
     if not person:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='person not found')
+    person = person[0]
     return Person(id=person.id,
                   full_name=person.full_name,
                   birth_date=person.birth_date,
@@ -31,8 +32,9 @@ async def person_list(
         page_size: int = 20,
         person_service: PersonService = Depends(get_person_service)) -> list[
     Person]:
-    person_list = await person_service.get_person_list(page_number=page_number,
-                                                       page_size=page_size)
+    person_list = await person_service.get_request(page_number=page_number,
+                                                   page_size=page_size)
+
     if not person_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='persons not found')
@@ -48,7 +50,10 @@ async def person_list(
 async def films_search(person_search_string: str,
                        person_service: PersonService = Depends(
                            get_person_service)) -> list[Person]:
-    person_list = await person_service.get_by_search(person_search_string)
+    person_list = await person_service.get_request(
+        q=person_search_string
+    )
+
     if not person_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='person not found')

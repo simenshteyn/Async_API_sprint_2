@@ -8,6 +8,8 @@ class TestSettings(BaseSettings):
     redis_port: int
     service_host: str
     service_port: int
+    service_protocol: str
+    service_api_version: int
 
 
 config = TestSettings.parse_file('config.json')
