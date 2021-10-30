@@ -1,6 +1,5 @@
 import json
 import logging
-from datetime import datetime
 
 from elasticsearch import Elasticsearch
 from utils import backoff
@@ -9,16 +8,11 @@ from utils import backoff
 logger = logging.getLogger('ESLoader')
 
 
-class Es:
+class EsSaver:
     def __init__(self, host: list, state_key='my_key'):
         self.client = Elasticsearch(host)
         self.movies_list = []
         self.key = state_key
-
-
-class EsSaver(Es):
-    def __init__(self, host: list, state_key='my_key'):
-        super().__init__(host, state_key)
 
     @backoff()
     def load_data(self, name_index) -> None:

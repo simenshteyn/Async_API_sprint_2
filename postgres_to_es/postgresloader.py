@@ -8,17 +8,19 @@ from schemas import Film, Genre, Person
 
 
 class PostgresConnect:
-    """Класс для выгрузки данных из postgres"""
-    def __init__(self, pg_conn: _connection, state_key='my_key'):
+    def __init__(self, pg_conn: _connection):
         self.conn = pg_conn
         self.cursor = self.conn.cursor(cursor_factory=DictCursor)
         self.batch_size = 100
+
+
+class PostgresLoader(PostgresConnect):
+    def __init__(self, pg_conn: _connection, state_key='my_key'):
+        super().__init__(pg_conn)
         self.key = state_key
         self.state_key = State(JsonFileStorage('PostgresDataState.txt')).get_state(state_key)
         self.data = []
 
-
-class PostgresLoader(PostgresConnect):
     def load_person_id(self) -> str:
         """Вложенный запрос на получение id персон, думаю функция тут лишняя """
         return load_person_q
