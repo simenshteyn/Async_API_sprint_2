@@ -11,6 +11,7 @@
 3. Скрипт запустит сервисы - Postgres, ElasticSearch, ETL, Redis
 4. Сервис ETL проверяет наличие обновлений в базе каждые 10-12 сек
 5. Пользуемся и радуемся)
+6. Запуск тестов из папки tests/functional командой docker-compose up --build
 
 ####  API сервисы
 
@@ -30,4 +31,4 @@ OpenAPI: [http://localhost:8000/api/openapi](http://localhost:8000/api/openapi)
 12. Список жанров: [http://localhost:8000/api/v1/genre/](http://localhost:8000/api/v1/genre/)
 13. Жанр по UUID: [http://localhost:8000/api/v1/genre/c020dab2-e9bd-4758-95ca-dbe363462173](http://localhost:8000/api/v1/genre/c020dab2-e9bd-4758-95ca-dbe363462173)
 
-[Ссылка на репозиторий](https://github.com/simenshteyn/Async_API_sprint_1)
+[Ссылка на репозиторий](https://github.com/simenshteyn/Async_API_sprint_2)
