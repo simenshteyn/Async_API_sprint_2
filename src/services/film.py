@@ -5,12 +5,14 @@ from aioredis import Redis
 from elasticsearch import AsyncElasticsearch
 from fastapi import Depends
 from pydantic.json import pydantic_encoder
+
 from db.elastic import get_elastic
 from db.redis import get_redis
 from models.models import Film
 from services.base import BaseService
 from .caching import RedisService
 from .es_search import EsService
+
 
 CACHE_EXPIRE = 60 * 5
 

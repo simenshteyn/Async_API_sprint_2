@@ -1,6 +1,7 @@
-from typing import Optional, Union
-from elasticsearch import AsyncElasticsearch
+from typing import Union
 from abc import ABC, abstractmethod
+from elasticsearch import AsyncElasticsearch, ConnectionError
+import backoff
 
 
 class EsSearch(ABC):
@@ -39,6 +40,7 @@ class EsService(EsSearch):
     async def body_all(self):
         return {"query": {"match_all": {}}}
 
+    @backoff.on_exception(backoff.expo, ConnectionError, max_time=10, factor=2)
     async def get_search(
             self,
             es_index: str,
@@ -46,7 +48,7 @@ class EsService(EsSearch):
             field: list,
             q: str = None,
             query: dict = None
-    ) -> Union:
+    ) -> list:
 
         if q:
             body = await self.body_search(field=field, q=q)

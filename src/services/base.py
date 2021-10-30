@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Union
+from typing import Optional
 from abc import abstractmethod
 
 from pydantic.json import pydantic_encoder
