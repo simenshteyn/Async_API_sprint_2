@@ -18,12 +18,15 @@ CACHE_EXPIRE = 60 * 5
 class FilmService(BaseService):
     es_index = 'movies'
     model = Film
-    es_field = ['id', 'title']
+    es_field = ['id', 'title', 'genre.id']
 
-    async def get_film_alike(self, film_id: str, key: str) -> list[Film] or None:
-        film_list = await self._get_film_sorted_from_cache(key)
+    async def get_film_alike(self, film_id: str) -> list[Film] or None:
+        film_list = await self._get_film_sorted_from_cache("alike:"+film_id)
         if not film_list:
-            get_films = await self.get_request(key=film_id, q=film_id)
+            get_films = await self._get_film_by_search_from_elastic(
+                query=None,
+                q=film_id,
+            )
             film = get_films[0]
             film_list = []
             query = {
@@ -34,14 +37,16 @@ class FilmService(BaseService):
             }
             for genre in film.genre:
                 alike_films = await self._get_film_by_search_from_elastic(
-                    query=query,
+                    query,
                     q=genre['id']
                 )
+                print(genre)
                 if alike_films:
                     film_list.extend(alike_films)
             await self.cache.set(
-                key=key, value=json.dumps(list(film_list), default=pydantic_encoder
-                                          ), expire=CACHE_EXPIRE)
+                key=f"alike:{film_id}",
+                value=json.dumps(list(film_list),
+                default=pydantic_encoder), expire=CACHE_EXPIRE)
 
         return film_list
 

@@ -14,16 +14,12 @@ async def films_sorted(sort: str = None,
                        page_number: int = 0,
                        page_size: int = 20,
                        film_service: FilmService = Depends(get_film_service)):
-    query = {
-         'sort_field': 'imdb_rating' if sort is None else sort.replace('-', ''),
-         'sort_type': 'desc' if sort is None or sort.startswith('-') else 'asc',
-         'filter_genre': filter_genre,
-         'page_number': page_number,
-         'page_size': page_size
-    }
-    key = f'{query["sort_field"]}:{query["sort_type"]}:{filter_genre}:{"movies"}:{page_size}:{page_number}'
-
-    film_list = await film_service.get_request(key=key, query=query, q=filter_genre)
+    film_list = await film_service.get_request(
+        sort_field = sort,
+        filter_genre = filter_genre,
+        page_number = page_number,
+        page_size = page_size,
+        )
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')
@@ -39,7 +35,6 @@ async def films_search(film_search_string: str,
                            get_film_service)) -> list[FilmShort]:
 
     film_list = await film_service.get_request(
-        key=f'movies:{film_search_string}',
         q=film_search_string
     )
     if not film_list:
@@ -55,11 +50,11 @@ async def films_search(film_search_string: str,
 async def film_details(film_id: str,
                        film_service: FilmService = Depends(
                            get_film_service)) -> Film:
-    film = await film_service.get_request(key=film_id, q=film_id)
-    if not film:
+    film_list = await film_service.get_request(q=film_id)
+    if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film not found')
-    film = film[0]
+    film = film_list[0]
     return Film(id=film.id,
                 imdb_rating=film.imdb_rating,
                 genre=film.genre,
@@ -69,13 +64,13 @@ async def film_details(film_id: str,
                 actors_names=film.actors_names,
                 writers_names=film.writers_names,
                 actors=film.actors,
-                writers=film.writers)
+                writers=film.writers,)
 
 
 @router.get('/{film_id}/alike', response_model=list[FilmShort],
             response_model_exclude_unset=True)
 async def film_alike(film_id: str, film_service: FilmService = Depends(get_film_service)) -> list[FilmShort]:
-    film_list = await film_service.get_film_alike(film_id=film_id, key=f'alike:{film_id}')
+    film_list = await film_service.get_film_alike(film_id=film_id)
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film alike not found')
@@ -89,15 +84,12 @@ async def film_alike(film_id: str, film_service: FilmService = Depends(get_film_
 async def popular_in_genre(genre_id: str,
                            film_service: FilmService = Depends(
                                get_film_service)) -> list[FilmShort]:
-    query = {
-                'sort_field': 'imdb_rating',
-                'sort_type': 'desc',
-                'filter_genre': genre_id,
-                'page_number': 0,
-                'page_size': 30
-            }
-    key = f'{query["sort_field"]}:{query["sort_type"]}:{genre_id}:{"movies"}:{query["page_size"]}:{query["page_number"]}'
-    film_list = await film_service.get_request(key=key, query=query, q=genre_id)
+
+    film_list = await film_service.get_request(
+        filter_genre=genre_id,
+        page_number=0,
+        page_size=30,
+        q=genre_id)
     if not film_list:
         raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
                             detail='film alike not found')

@@ -20,7 +20,7 @@ async def test_general_person_list(make_get_request,
                                    redis_client):
     response = await make_get_request('person/')
     people = await extract_people(response)
-    cache = await redis_client.get('person:0:20')
+    cache = await redis_client.get('person:None:None:None:0:20')
     assert response.status == HTTPStatus.OK
     assert len(people) > 0
     assert cache
@@ -33,7 +33,7 @@ async def test_person_search_via_uuid(make_get_request, redis_client):
     person_uuid = person_list[0].id
     response = await make_get_request(f'person/{person_uuid}')
     person = await extract_person(response)
-    cache = await redis_client.get(f'{person_uuid}')
+    cache = await redis_client.get(f'person:{person_uuid}')
     assert response_people.status == HTTPStatus.OK
     assert response.status == HTTPStatus.OK
     assert person.id == person_uuid
@@ -44,7 +44,7 @@ async def test_person_search_via_uuid(make_get_request, redis_client):
 async def test_person_list_page_number(make_get_request, redis_client):
     response = await make_get_request('person/?page_number=0')
     people = await extract_people(response)
-    cache = await redis_client.get('person:0:20')
+    cache = await redis_client.get('person:None:None:None:0:20')
     assert response.status == HTTPStatus.OK
     assert len(people) > 0
     assert cache
@@ -54,7 +54,7 @@ async def test_person_list_page_number(make_get_request, redis_client):
 async def test_person_list_page_size(make_get_request, redis_client):
     response = await make_get_request('person/?page_size=9')
     people = await extract_people(response)
-    cache = await redis_client.get('person:0:9')
+    cache = await redis_client.get('person:None:None:None:0:9')
     assert response.status == HTTPStatus.OK
     assert (len(people) > 0) and (len(people) < 10)
     assert cache
@@ -65,7 +65,7 @@ async def test_person_list_page_number_and_size(make_get_request,
                                                 redis_client):
     response = await make_get_request('person/?page_size=8&page_number=0')
     people = await extract_people(response)
-    cache = await redis_client.get('person:0:8')
+    cache = await redis_client.get('person:None:None:None:0:8')
     assert response.status == HTTPStatus.OK
     assert (len(people) > 0) and (len(people) < 9)
     assert cache
@@ -89,7 +89,7 @@ async def test_es_person_uploading(make_get_request, redis_client):
     response = await make_get_request(
         'person/test-person-b55c-45f6-9200-41f153a72a7a')
     person = await extract_person(response)
-    cache = await redis_client.get('test-person-b55c-45f6-9200-41f153a72a7a')
+    cache = await redis_client.get('person:test-person-b55c-45f6-9200-41f153a72a7a')
     assert person.id == "test-person-b55c-45f6-9200-41f153a72a7a"
     assert person.full_name == "Test Jonathan Knight"
     assert cache

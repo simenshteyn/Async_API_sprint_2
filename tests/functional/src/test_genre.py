@@ -21,7 +21,7 @@ async def test_search_genre(make_get_request, load_testing_genre_data, redis_cli
 
     assert len(response.body) != 0
 
-    data = await redis_client.get('genre:0:50')
+    data = await redis_client.get('genre:None:None:None:0:50')
     assert data
 
 
@@ -37,6 +37,6 @@ async def test_search_detailed(make_get_request, redis_client):
     assert response.body['description'] is None
     assert len(response.body) == 3
 
-    data = await redis_client.get('some-test-id-aac0-4abee51193d8')
+    data = await redis_client.get('genre:some-test-id-aac0-4abee51193d8')
     assert data
     assert 'some-test-id-aac0-4abee51193d8' in data.decode('UTF-8').lower()
