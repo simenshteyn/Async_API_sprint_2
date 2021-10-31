@@ -1,12 +1,11 @@
 import json
-from typing import Optional
 from abc import abstractmethod
 
 from pydantic.json import pydantic_encoder
 from pydantic import parse_raw_as
-from .caching import Cacheable
-from models.models import Film, Person, Genre
-from .es_search import EsService
+from services.caching import Cacheable
+from models.models import Film
+from services.es_search import EsService
 
 
 CACHE_EXPIRE = 60 * 5

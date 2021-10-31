@@ -1,27 +1,7 @@
-from typing import Union
-from abc import ABC, abstractmethod
 from elasticsearch import AsyncElasticsearch, ConnectionError
 import backoff
 
-
-class EsSearch(ABC):
-
-    @abstractmethod
-    def body_search(self, key: str, query: str):
-        pass
-
-    @abstractmethod
-    def body_all(self):
-        pass
-
-    @abstractmethod
-    def get_search(self,
-                   es_index: str,
-                   func_name: str,
-                   field: list,
-                   q: str = None,
-                   query: dict = None):
-        pass
+from services.interfaces import EsSearch
 
 
 class EsService(EsSearch):
@@ -30,15 +10,15 @@ class EsService(EsSearch):
         self.elastic = elastic
 
     async def body_search(self, q: str, field: list):
-        return {"query": {
-            "multi_match": {
-                "query": f"{q}",
-                "fields": field
+        return {'query': {
+            'multi_match': {
+                'query': f'{q}',
+                'fields': field
             }
         }}
 
     async def body_all(self):
-        return {"query": {"match_all": {}}}
+        return {'query': {'match_all': {}}}
 
     @backoff.on_exception(backoff.expo, ConnectionError, max_time=10, factor=2)
     async def get_search(
@@ -57,9 +37,10 @@ class EsService(EsSearch):
 
         doc = self.elastic.search(
             index=es_index,
-            body = body,
-            size = query.get('page_size') if query else None,
-            from_ = query.get('page_number') * query.get('page_size') if query else None,
-            sort = f'{query.get("sort_field")}:{query.get("sort_type")}' if query else None,
+            body=body,
+            size=query.get('page_size') if query else None,
+            from_=query.get('page_number') * query.get(
+                'page_size') if query else None,
+            sort=f'{query.get("sort_field")}:{query.get("sort_type")}' if query else None,
         )
         return await doc

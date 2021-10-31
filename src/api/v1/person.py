@@ -15,8 +15,7 @@ async def person_details(person_id: str,
                              get_person_service)) -> Person:
     person = await person_service.get_request(q=person_id)
     if not person:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='person not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
     person = person[0]
     return Person(id=person.id,
                   full_name=person.full_name,
@@ -36,8 +35,7 @@ async def person_list(
                                                    page_size=page_size)
 
     if not person_list:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='persons not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
     return [Person(id=person.id,
                    full_name=person.full_name,
                    birth_date=person.birth_date,
@@ -55,8 +53,7 @@ async def films_search(person_search_string: str,
     )
 
     if not person_list:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='person not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
     return [Person(id=person.id,
                    full_name=person.full_name,
                    birth_date=person.birth_date,

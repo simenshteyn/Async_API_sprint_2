@@ -1,17 +1,8 @@
-from abc import ABC, abstractmethod
 from typing import Union
 import backoff
 from aioredis import Redis
 
-
-class Cacheable(ABC):
-    @abstractmethod
-    def get(self, key: str):
-        pass
-
-    @abstractmethod
-    def set(self, key: str, value: str, expire: int):
-        pass
+from services.interfaces import Cacheable
 
 
 class RedisService(Cacheable):
