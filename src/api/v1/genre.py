@@ -15,8 +15,7 @@ async def genre_details(genre_id: str,
                             get_genre_service)) -> Genre:
     genre = await genre_service.get_request(q=genre_id)
     if not genre:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='genre not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
     genre = genre[0]
     return Genre(id=genre.id,
                  name=genre.name,
@@ -33,8 +32,7 @@ async def genre_list(
     genre_list = await genre_service.get_request(page_number=page_number,
                                                  page_size=page_size)
     if not genre_list:
-        raise HTTPException(status_code=HTTPStatus.NOT_FOUND,
-                            detail='genres not found')
+        raise HTTPException(status_code=HTTPStatus.NOT_FOUND)
     return [Genre(id=genre.id,
                   name=genre.name,
                   description=genre.description) for genre in genre_list]
